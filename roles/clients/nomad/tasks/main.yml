@@ -1,0 +1,33 @@
+- name: Ensure Nomad configuration directory exists
+  file:
+    path: /etc/nomad.d
+    state: directory
+    mode: '0755'
+
+- name: Deploy Nomad client configuration
+  template:
+    src: client.hcl.j2
+    dest: /etc/nomad.d/client.hcl
+    mode: '0644'
+  notify: Restart Nomad
+
+- name: Enable and start Nomad service
+  systemd:
+    name: nomad
+    enabled: yes
+    state: started
+  become: yes
+
+- name: Wait for Nomad to start
+  wait_for:
+    timeout: 120
+
+- name: Check Nomad client status
+  shell: "nomad node-status"
+  register: nomad_status
+  changed_when: false
+  failed_when: false
+
+- name: Wait for clients to register
+  pause:
+    seconds: 10

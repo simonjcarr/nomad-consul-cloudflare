@@ -1,0 +1,160 @@
+- name: update and upgrade apt packages
+  when: ansible_os_family == 'Debian'
+  apt:
+    upgrade: yes
+    update_cache: yes
+
+- name: update and upgrade yum packages
+  when: ansible_os_family == 'RedHat'
+  yum:
+    name: '*'
+    state: latest
+    update_cache: yes
+
+- name: install required packages on Debian
+  when: ansible_os_family == 'Debian'
+  apt:
+    name:
+      - chrony
+      - unzip
+      - curl
+    state: present
+
+- name: install required packages on RedHat
+  when: ansible_os_family == 'RedHat'
+  yum:
+    name:
+      - chrony
+      - unzip
+      - curl
+    state: present
+
+- name: enable and start chrony service
+  service:
+    name: chrony
+    state: started
+    enabled: yes
+
+- name: create consul system user
+  user:
+    name: consul
+    system: yes
+    home: /etc/consul.d
+    shell: /bin/false
+    state: present
+
+- name: create nomad system user
+  user:
+    name: nomad
+    system: yes
+    home: /etc/nomad.d
+    shell: /bin/false
+    state: present
+
+- name: download Consul
+  get_url:
+    url: https://releases.hashicorp.com/consul/{{ consul_version }}/consul_{{ consul_version }}_linux_amd64.zip
+    dest: /tmp/consul.zip
+    mode: 0644
+
+- name: extract Consul
+  unarchive:
+    src: /tmp/consul.zip
+    dest: /tmp
+    remote_src: yes
+
+- name: move Consul binary to /usr/local/bin
+  copy:
+    src: /tmp/consul
+    dest: /usr/local/bin/
+    mode: 0755
+    remote_src: yes
+
+- name: remove Consul zip
+  file:
+    path: /tmp/consul.zip
+    state: absent
+
+- name: create Consul directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  with_items:
+    - /etc/consul.d
+    - /var/lib/consul
+
+- name: set ownership of Consul directories
+  file:
+    path: "{{ item }}"
+    owner: consul
+    group: consul
+    recurse: yes
+  with_items:
+    - /etc/consul.d
+    - /var/lib/consul
+
+- name: create Consul systemd service file
+  template:
+    src: consul.service.j2
+    dest: /etc/systemd/system/consul.service
+    mode: 0644
+
+- name: reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: download Nomad
+  get_url:
+    url: "https://releases.hashicorp.com/nomad/{{ nomad_version }}/nomad_{{ nomad_version }}_linux_amd64.zip"
+    dest: /tmp/nomad.zip
+    mode: 0644
+
+- name: extract Nomad
+  unarchive:
+    src: /tmp/nomad.zip
+    dest: /tmp
+    remote_src: yes
+
+- name: move Nomad binary to /usr/local/bin
+  copy:
+    src: /tmp/nomad
+    dest: /usr/local/bin/
+    mode: 0755
+    remote_src: yes
+
+- name: remove Nomad zip
+  file:
+    path: /tmp/nomad.zip
+    state: absent
+
+- name: create Nomad directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  with_items:
+    - /etc/nomad.d
+    - /var/lib/nomad
+
+- name: set ownership of Nomad directories
+  file:
+    path: "{{ item }}"
+    owner: nomad
+    group: nomad
+    recurse: yes
+  with_items:
+    - /etc/nomad.d
+    - /var/lib/nomad
+
+- name: create Nomad systemd service file
+  template:
+    src: nomad.service.j2
+    dest: /etc/systemd/system/nomad.service
+    mode: 0644
+
+- name: reload systemd daemon for Nomad
+  systemd:
+    daemon_reload: yes
+
+

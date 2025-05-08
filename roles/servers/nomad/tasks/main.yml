@@ -1,0 +1,25 @@
+- name: copy server.hcl to /etc/nomad.d
+  template:
+    src: server.hcl.j2
+    dest: /etc/nomad.d/server.hcl
+    mode: '0644'
+
+- name: enable and start nomad service
+  systemd:
+    name: nomad
+    enabled: yes
+    state: started
+
+- name: wait for nomad to start
+  wait_for:
+    timeout: 120
+
+- name: check nomad raft peers
+  shell: nomad server members
+  register: nomad_peers
+  changed_when: false
+
+- name: verify correct number of voters exist
+  assert:
+    that: "nomad_peers.stdout_lines | list | length == {{ groups['servers'] | length + 1 }}" # wee add 1 because of the header line
+    fail_msg: "Expected {{ groups['servers'] | length }} Nomad voters but found different number"

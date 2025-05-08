@@ -1,0 +1,17 @@
+[Unit]
+Description=Consul Agent
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=consul
+Group=consul
+ExecStart=/usr/local/bin/consul agent \
+  -config-dir=/etc/consul.d \
+  -data-dir=/var/lib/consul
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

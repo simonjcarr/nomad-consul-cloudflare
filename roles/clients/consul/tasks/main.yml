@@ -1,0 +1,33 @@
+- name: Ensure Consul configuration directory exists
+  file:
+    path: /etc/consul.d
+    state: directory
+    mode: '0755'
+
+- name: Deploy Consul client configuration
+  template:
+    src: consul_client_config.hcl.j2
+    dest: /etc/consul.d/client.hcl
+    mode: '0644'
+  notify: Restart Consul
+
+- name: Enable and start Consul service
+  systemd:
+    name: consul
+    enabled: yes
+    state: started
+  become: yes
+
+- name: Wait for Consul to start
+  wait_for:
+    timeout: 15
+
+- name: Check Consul raft peers
+  shell: consul members
+  register: consul_peers
+  changed_when: false
+
+- name: Verify correct number of voters exist
+  assert:
+    that: "consul_peers.stdout_lines | list | length == {{ (groups['clients'] | length) + (groups['servers'] | length) + 1 }}"
+    fail_msg: "Expected {{ (groups['clients'] | length) + (groups['servers'] | length) - 1 }} Consul voters but found different number"

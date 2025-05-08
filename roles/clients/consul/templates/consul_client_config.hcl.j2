@@ -1,0 +1,16 @@
+datacenter = "{{ datacenter }}"
+data_dir   = "/var/lib/consul"
+bind_addr  = "{{ ansible_host }}"
+client_addr = "0.0.0.0"
+
+server = false
+
+start_join = [
+  {%- for host in groups['servers'] -%}
+    "{{ hostvars[host]['ansible_host'] }}",
+  {%- endfor -%}
+]
+
+ui_config {
+  enabled = true
+}

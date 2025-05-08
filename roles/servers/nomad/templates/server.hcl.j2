@@ -1,0 +1,19 @@
+region      = "global"
+datacenter  = "{{ datacenter }}"
+data_dir    = "/var/lib/nomad"
+
+bind_addr = "0.0.0.0"
+advertise {
+  http = "{{ ansible_host }}:4646"
+  rpc  = "{{ ansible_host }}:4647"
+  serf = "{{ ansible_host }}:4648"
+}
+
+server {
+  enabled          = true
+  bootstrap_expect = 3
+}
+
+consul {
+  address = "127.0.0.1:8500"
+}
