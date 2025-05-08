@@ -13,7 +13,7 @@ client {
   enabled = true
   servers = [
     {%- for host in groups['servers'] -%}
-      "{{ hostvars[host]['ansible_host'] }}:4647",
+      "{{ hostvars[host]['ansible_host'] }}:4647"{% if not loop.last %},{% endif %}
     {%- endfor -%}
   ]
 }

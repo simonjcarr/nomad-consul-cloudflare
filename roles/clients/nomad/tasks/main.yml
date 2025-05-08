@@ -4,6 +4,14 @@
     state: directory
     mode: '0755'
 
+- name: Ensure alloc_mounts directory exists
+  file:
+    path: /var/lib/alloc_mounts
+    state: directory
+    mode: '0755'
+    owner: nomad
+    group: nomad
+
 - name: Deploy Nomad client configuration
   template:
     src: client.hcl.j2

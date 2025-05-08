@@ -8,7 +8,7 @@ client_addr = "0.0.0.0"
 
 start_join = [
   {%- for host in groups['servers'] -%}
-    "{{ hostvars[host]['ansible_host'] }}",
+    "{{ hostvars[host]['ansible_host'] }}"{% if not loop.last %},{% endif %}
   {%- endfor -%}
 ]
 
