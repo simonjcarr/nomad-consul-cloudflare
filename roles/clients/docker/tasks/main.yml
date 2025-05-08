@@ -22,3 +22,9 @@
     name: "{{ ansible_user }}"
     groups: docker
     append: yes
+
+- name: add nomad to docker group
+  user:
+    name: nomad
+    groups: docker
+    append: yes
