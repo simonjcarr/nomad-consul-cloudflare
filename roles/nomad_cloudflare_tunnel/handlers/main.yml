@@ -2,3 +2,7 @@
 - name: Run or update cloudflared Nomad job
   debug:
     msg: "Cloudflared Nomad job reloaded."
+
+- name: Nomad job reloaded
+  debug:
+    msg: "Nomad job reloaded handler called (no action taken)."

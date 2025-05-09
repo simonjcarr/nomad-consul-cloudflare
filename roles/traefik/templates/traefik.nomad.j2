@@ -1,0 +1,59 @@
+job "traefik" {
+  datacenters = ["{{ datacenter }}"]
+  type = "service"
+
+  group "traefik" {
+
+    count = 1
+
+    network {
+      port "web" {
+        static = 8080
+        to     = 8080
+      }
+      # Uncomment for HTTPS if needed
+      # port "websecure" {
+      #   static = 8443
+      #   to     = 8443
+      # }
+    }
+
+    task "traefik" {
+      driver = "docker"
+      config {
+        image = "traefik:v2.11"
+        ports = ["web"]
+        volumes = [
+          "/mnt/data/traefik-config/traefik.yml:/etc/traefik/traefik.yml",
+          "/mnt/data/traefik-config/acme.json:/acme.json"
+        ]
+        network_mode = "host"
+      }
+      env {
+        # Add any required environment variables here
+      }
+      resources {
+        cpu    = 200
+        memory = 128
+      }
+    }
+
+
+
+    service {
+      name = "traefik"
+      port = "web"
+      tags = [
+        "traefik.enable=true"
+      ]
+      check {
+        name     = "alive"
+        type     = "http"
+        path     = "/ping"
+        interval = "10s"
+        timeout  = "2s"
+      }
+    }
+  }
+}
+

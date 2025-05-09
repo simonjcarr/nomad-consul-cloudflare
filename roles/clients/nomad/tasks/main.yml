@@ -12,6 +12,14 @@
     owner: nomad
     group: nomad
 
+- name: Ensure traefik-config directory exists and is owned by nomad
+  file:
+    path: /mnt/data/traefik-config
+    state: directory
+    mode: '0755'
+    owner: nomad
+    group: nomad
+
 - name: Deploy Nomad client configuration
   template:
     src: client.hcl.j2
@@ -19,11 +27,11 @@
     mode: '0644'
   notify: Restart Nomad
 
-- name: Enable and start Nomad service
+- name: Ensure Nomad service is started or restarted
   systemd:
     name: nomad
     enabled: yes
-    state: started
+    state: restarted
   become: yes
 
 - name: Wait for Nomad service to become active

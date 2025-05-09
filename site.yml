@@ -10,6 +10,7 @@
     - servers/consul
     - servers/nomad
     - nomad_cloudflare_tunnel
+    - traefik
 
 - name: Configure Consul and Nomad clients
   hosts: clients
@@ -17,3 +18,4 @@
     - clients/consul
     - clients/nomad
     - clients/docker
+    - traefik

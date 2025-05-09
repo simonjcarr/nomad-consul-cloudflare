@@ -1,0 +1,15 @@
+entryPoints:
+  web:
+    address: ":8080"
+
+providers:
+  consulCatalog:
+    endpoint:
+      address: "{{ ansible_host }}:8500"
+    exposedByDefault: false
+
+api:
+  dashboard: true
+
+ping:
+  entryPoint: web

@@ -10,14 +10,32 @@ advertise {
 }
 
 client {
+  meta {
+    traefik = "true"
+    cloudflare = "true"
+  }
   enabled = true
   servers = [
     {%- for host in groups['servers'] -%}
       "{{ hostvars[host]['ansible_host'] }}:4647"{% if not loop.last %},{% endif %}
     {%- endfor -%}
   ]
+
+  # Host volume for Traefik
+  host_volume "traefik-config" {
+    path      = "/mnt/data/traefik-config"
+    read_only = false
+  }
 }
 
 consul {
   address = "127.0.0.1:8500"
+}
+
+plugin "docker" {
+  config {
+    volumes {
+      enabled = true
+    }
+  }
 }
