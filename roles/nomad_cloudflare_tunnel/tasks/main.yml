@@ -1,0 +1,42 @@
+---
+- name: Ensure Nomad job directory exists
+  file:
+    path: "{{ nomad_cloudflare_tunnel_job_dir }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: '0755'
+
+- name: Render cloudflared Nomad job spec (backup on all servers)
+  template:
+    src: cloudflared_tunnel.nomad.j2
+    dest: "{{ nomad_cloudflare_tunnel_nomad_job_file }}"
+    owner: "{{ ansible_user }}"
+    mode: '0644'
+  when: "'servers' in group_names"
+
+- name: Check if Nomad job is running (only on first server)
+  command: nomad job status {{ nomad_cloudflare_tunnel_job_name }}
+  register: nomad_job_status
+  failed_when: false
+  changed_when: false
+  when: inventory_hostname == groups['servers'][0]
+
+- name: Get current Nomad job spec (only on first server)
+  command: nomad job inspect {{ nomad_cloudflare_tunnel_job_name }}
+  register: nomad_job_inspect
+  failed_when: false
+  changed_when: false
+  when: inventory_hostname == groups['servers'][0] and nomad_job_status.rc == 0
+
+- name: Check if job spec has changed (only on first server)
+  shell: diff {{ nomad_cloudflare_tunnel_nomad_job_file }} <(echo "{{ nomad_job_inspect.stdout | default('') }}")
+  register: job_diff
+  failed_when: false
+  changed_when: false
+  when: inventory_hostname == groups['servers'][0] and nomad_job_status.rc == 0
+
+- name: Run or update cloudflared Nomad job (only on first server)
+  command: nomad job run {{ nomad_cloudflare_tunnel_nomad_job_file }}
+  when: inventory_hostname == groups['servers'][0] and (nomad_job_status.rc != 0 or job_diff.rc != 0)
+
+  notify: Nomad job reloaded

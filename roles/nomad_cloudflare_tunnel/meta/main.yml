@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  role_name: nomad_cloudflare_tunnel
+  author: your_name
+  description: Deploy Cloudflare Tunnel as a Nomad job
+  license: MIT
+  min_ansible_version: 2.9
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all

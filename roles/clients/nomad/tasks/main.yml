@@ -26,9 +26,13 @@
     state: started
   become: yes
 
-- name: Wait for Nomad to start
-  wait_for:
-    timeout: 120
+- name: Wait for Nomad service to become active
+  command: systemctl is-active nomad
+  register: nomad_service_status
+  retries: 24
+  delay: 5
+  until: nomad_service_status.stdout.strip() == "active"
+  changed_when: false
 
 - name: Check Nomad client status
   shell: "nomad node-status"
@@ -36,6 +40,11 @@
   changed_when: false
   failed_when: false
 
-- name: Wait for clients to register
-  pause:
-    seconds: 10
+- name: Wait for Nomad clients to register
+  shell: |
+    nomad node-status | grep -q 'ready'
+  register: nomad_clients_ready
+  retries: 24
+  delay: 5
+  until: nomad_clients_ready.rc == 0
+  changed_when: false

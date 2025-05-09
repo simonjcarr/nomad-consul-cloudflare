@@ -1,0 +1,38 @@
+job "{{ nomad_cloudflare_tunnel_job_name }}" {
+  datacenters = ["{{ datacenter }}"]
+  type = "service"
+
+  group "cloudflared" {
+    count = 1
+    network {
+      mode = "host"
+    }
+    task "cloudflared" {
+      driver = "docker"
+      config {
+        image = "{{ nomad_cloudflare_tunnel_image }}"
+        command = "tunnel"
+        args = [
+          "--no-autoupdate",
+          "run",
+          "--token", "{{ cloudflare_tunnel_token }}"
+        ]
+        network_mode = "host"
+      }
+      env {
+        # Consul DNS resolver for internal services
+        # cloudflared will resolve traefik.service.consul:80
+      }
+      resources {
+        cpu    = 100
+        memory = 64
+      }
+      restart {
+        attempts = 10
+        interval = "5m"
+        delay    = "25s"
+        mode     = "delay"
+      }
+    }
+  }
+}

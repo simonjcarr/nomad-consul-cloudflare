@@ -10,9 +10,13 @@
     enabled: yes
     state: started
 
-- name: wait for nomad to start
-  wait_for:
-    timeout: 120
+- name: Wait for Nomad service to become active
+  command: systemctl is-active nomad
+  register: nomad_service_status
+  retries: 24
+  delay: 5
+  until: nomad_service_status.stdout.strip() == "active"
+  changed_when: false
 
 - name: check nomad raft peers
   shell: nomad server members

@@ -9,6 +9,7 @@
   roles:
     - servers/consul
     - servers/nomad
+    - nomad_cloudflare_tunnel
 
 - name: Configure Consul and Nomad clients
   hosts: clients

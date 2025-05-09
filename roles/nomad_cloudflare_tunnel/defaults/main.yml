@@ -1,0 +1,8 @@
+---
+# Default variables for nomad_cloudflare_tunnel
+nomad_cloudflare_tunnel_job_name: cloudflared-tunnel
+nomad_cloudflare_tunnel_image: cloudflare/cloudflared:latest
+nomad_cloudflare_tunnel_job_dir: "/home/{{ ansible_user }}/jobs"
+nomad_cloudflare_tunnel_nomad_job_file: "{{ nomad_cloudflare_tunnel_job_dir }}/cloudflared_tunnel.nomad"
+nomad_cloudflare_tunnel_traefik_host: traefik.service.consul
+nomad_cloudflare_tunnel_traefik_port: 80

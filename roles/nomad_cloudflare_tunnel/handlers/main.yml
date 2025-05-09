@@ -1,0 +1,4 @@
+---
+- name: Run or update cloudflared Nomad job
+  debug:
+    msg: "Cloudflared Nomad job reloaded."

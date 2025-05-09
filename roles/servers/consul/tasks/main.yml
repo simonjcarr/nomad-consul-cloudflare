@@ -19,9 +19,13 @@
     state: started
   become: yes
 
-- name: Wait for Consul to start
-  wait_for:
-    timeout: 15
+- name: Wait for Consul service to become active
+  command: systemctl is-active consul
+  register: consul_service_status
+  retries: 24
+  delay: 5
+  until: consul_service_status.stdout.strip() == "active"
+  changed_when: false
 
 - name: Check Consul raft peers
   shell: consul operator raft list-peers
