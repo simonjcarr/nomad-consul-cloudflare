@@ -1,0 +1,11 @@
+---
+- name: Render Nomad job spec for test app
+  template:
+    src: nomad_test_app.nomad.j2
+    dest: "/home/{{ ansible_user }}/jobs/nomad_test_app.nomad"
+    owner: "{{ ansible_user }}"
+    mode: '0644'
+
+- name: Run or update test app Nomad job (submit from first client only)
+  command: nomad job run /home/{{ ansible_user }}/jobs/nomad_test_app.nomad
+  when: inventory_hostname == groups['clients'][0]

@@ -1,0 +1,44 @@
+job "nomad-test-app" {
+  datacenters = ["{{ datacenter }}"]
+  type = "service"
+
+  group "nginx-demo" {
+    count = 3
+
+    network {
+      port "http" {
+        static = 8081
+        to     = 80
+      }
+    }
+
+    task "nginx-demo" {
+      driver = "docker"
+      config {
+        image = "nginxdemos/hello"
+        ports = ["http"]
+        network_mode = "bridge"
+      }
+      resources {
+        cpu    = 50
+        memory = 32
+      }
+    }
+
+    service {
+      name = "nomad-test-app"
+      port = "http"
+      tags = [
+        "traefik.enable=true",
+        "traefik.http.routers.nomadtest.rule=Host(`nomad-test.carrtech.dev`)"
+      ]
+      check {
+        name     = "alive"
+        type     = "http"
+        path     = "/"
+        interval = "10s"
+        timeout  = "2s"
+      }
+    }
+  }
+}

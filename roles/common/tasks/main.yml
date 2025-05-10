@@ -1,3 +1,43 @@
+- name: Configure dnsmasq for Consul and Internet DNS
+  copy:
+    dest: /etc/dnsmasq.d/10-consul
+    content: |
+      server=/consul/127.0.0.1#8600
+      server=1.1.1.1
+      server=8.8.8.8
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Stop systemd-resolved if present
+  service:
+    name: systemd-resolved
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+
+- name: Remove /etc/resolv.conf symlink if present
+  file:
+    path: /etc/resolv.conf
+    state: absent
+    force: yes
+  when: ansible_facts['distribution'] in ['Ubuntu', 'Debian']
+  ignore_errors: yes
+
+- name: Create /etc/resolv.conf pointing to localhost
+  copy:
+    dest: /etc/resolv.conf
+    content: "nameserver 127.0.0.1\n"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Ensure dnsmasq is enabled and restarted
+  service:
+    name: dnsmasq
+    state: restarted
+    enabled: yes
+
 - name: update and upgrade apt packages
   when: ansible_os_family == 'Debian'
   apt:
@@ -18,6 +58,7 @@
       - chrony
       - unzip
       - curl
+      - dnsmasq
     state: present
 
 - name: install required packages on RedHat
@@ -27,6 +68,7 @@
       - chrony
       - unzip
       - curl
+      - dnsmasq
     state: present
 
 - name: enable and start chrony service
@@ -156,5 +198,7 @@
 - name: reload systemd daemon for Nomad
   systemd:
     daemon_reload: yes
+
+
 
 

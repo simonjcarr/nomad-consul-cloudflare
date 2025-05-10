@@ -1,2 +1,4 @@
 traefik_config_dir: "/home/simon/traefik-config"
 traefik_nomad_job_path: "/home/simon/jobs/traefik.nomad"
+nomad_cloudflare_tunnel_traefik_host: traefik.service.consul
+nomad_cloudflare_tunnel_traefik_port: 8080

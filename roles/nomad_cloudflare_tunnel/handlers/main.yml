@@ -1,8 +1,4 @@
 ---
-- name: Run or update cloudflared Nomad job
-  debug:
-    msg: "Cloudflared Nomad job reloaded."
-
-- name: Nomad job reloaded
-  debug:
-    msg: "Nomad job reloaded handler called (no action taken)."
+- name: Restart cloudflared Nomad job
+  command: nomad job stop -purge {{ nomad_cloudflare_tunnel_job_name }} && nomad job run {{ nomad_cloudflare_tunnel_nomad_job_file }}
+  become: yes

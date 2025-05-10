@@ -6,6 +6,15 @@
     owner: "{{ ansible_user }}"
     mode: '0755'
 
+# - name: Render cloudflared config for tunnel
+#   template:
+#     src: cloudflared_config.yml.j2
+#     dest: "/home/{{ ansible_user }}/cloudflared_config.yml"
+#     owner: "{{ ansible_user }}"
+#     mode: '0644'
+#   when: "'servers' in group_names"
+#   notify: Restart cloudflared Nomad job
+
 - name: Render cloudflared Nomad job spec (backup on all servers)
   template:
     src: cloudflared_tunnel.nomad.j2
@@ -38,5 +47,3 @@
 - name: Run or update cloudflared Nomad job (only on first server)
   command: nomad job run {{ nomad_cloudflare_tunnel_nomad_job_file }}
   when: inventory_hostname == groups['servers'][0] and (nomad_job_status.rc != 0 or job_diff.rc != 0)
-
-  notify: Nomad job reloaded

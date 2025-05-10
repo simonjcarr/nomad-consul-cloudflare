@@ -1,0 +1,7 @@
+# Cloudflared Tunnel Config for Traefik domain routing
+ingress:
+  - hostname: "nomad-test.carrtech.dev"
+    service: "http://{{ nomad_cloudflare_tunnel_traefik_host }}:{{ nomad_cloudflare_tunnel_traefik_port }}"
+  - hostname: "{{ cloudflare_tunnel_domain }}"
+    service: "http://{{ nomad_cloudflare_tunnel_traefik_host }}:{{ nomad_cloudflare_tunnel_traefik_port }}"
+  - service: http_status:404

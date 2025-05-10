@@ -1,3 +1,4 @@
 ---
 # Global configuration variables
 datacenter: "home_lab"
+cloudflare_tunnel_domain: "*.carrtech.dev"
