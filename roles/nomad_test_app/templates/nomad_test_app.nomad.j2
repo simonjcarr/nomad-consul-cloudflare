@@ -7,8 +7,8 @@ job "nomad-test-app" {
 
     network {
       port "http" {
-        static = 8081
-        to     = 80
+        # Dynamic port allocation: no static or to assignment
+        to = 80
       }
     }
 
