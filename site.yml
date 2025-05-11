@@ -9,14 +9,19 @@
   roles:
     - servers/consul
     - servers/nomad
-    - nomad_cloudflare_tunnel
-    - traefik
+    - clients/docker
 
-- name: Configure Consul and Nomad clients
+- name: Configure nomad clients
   hosts: clients
   roles:
-    - clients/consul
     - clients/nomad
+    - clients/consul
     - clients/docker
+    - traefik
+
+- name: Configure cloudflare tunnel and traefik
+  hosts: servers
+  roles:
+    - nomad_cloudflare_tunnel
     - traefik
     - nomad_test_app

@@ -22,7 +22,7 @@
 - name: Wait for Consul service to become active
   command: systemctl is-active consul
   register: consul_service_status
-  retries: 24
+  retries: 50
   delay: 5
   until: consul_service_status.stdout.strip() == "active"
   changed_when: false
@@ -31,8 +31,12 @@
   shell: consul operator raft list-peers
   register: consul_peers
   changed_when: false
+  retries: 50
+  delay: 5
 
 - name: Verify correct number of voters exist
   assert:
     that: "consul_peers.stdout_lines | list | length == {{ groups['servers'] | length + 1 }}" # We count 4 because of the header line
     fail_msg: "Expected {{ groups['servers'] | length - 1 }} Consul voters but found different number"
+  retries: 50
+  delay: 5

@@ -13,13 +13,15 @@
 - name: Wait for Nomad service to become active
   command: systemctl is-active nomad
   register: nomad_service_status
-  retries: 24
+  retries: 50
   delay: 5
   until: nomad_service_status.stdout.strip() == "active"
   changed_when: false
 
 - name: check nomad raft peers
   shell: nomad server members
+  retries: 50
+  delay: 5
   register: nomad_peers
   changed_when: false
 
@@ -27,3 +29,5 @@
   assert:
     that: "nomad_peers.stdout_lines | list | length == {{ groups['servers'] | length + 1 }}" # wee add 1 because of the header line
     fail_msg: "Expected {{ groups['servers'] | length }} Nomad voters but found different number"
+  retries: 50
+  delay: 5

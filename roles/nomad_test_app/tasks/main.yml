@@ -6,6 +6,6 @@
     owner: "{{ ansible_user }}"
     mode: '0644'
 
-- name: Run or update test app Nomad job (submit from first client only)
+- name: Run or update test app Nomad job (submit from first server only)
   command: nomad job run /home/{{ ansible_user }}/jobs/nomad_test_app.nomad
-  when: inventory_hostname == groups['clients'][0]
+  when: inventory_hostname == groups['servers'][0]

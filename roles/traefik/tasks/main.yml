@@ -1,11 +1,15 @@
 ---
-- name: Ensure Traefik config directory exists
+- name: Ensure Traefik config directories exist
   file:
-    path: "/mnt/data/traefik-config"
+    path: "{{ item }}"
     state: directory
     owner: nomad
     group: nomad
     mode: '0755'
+  with_items:
+    - "/mnt/data/traefik-config"
+    - "/mnt/data/traefik-config/dynamic"
+  tags: [traefik, traefik_config]
 
 - name: Render Traefik static config
   template:
@@ -14,6 +18,7 @@
     owner: nomad
     group: nomad
     mode: '0644'
+  tags: [traefik, traefik_config]
 
 - name: Render Traefik ACME file
   template:
@@ -22,6 +27,7 @@
     owner: nomad
     group: nomad
     mode: '0600'
+  tags: [traefik, traefik_config]
 
 - name: Render Traefik Nomad job spec
   template:
@@ -29,8 +35,10 @@
     dest: "{{ traefik_nomad_job_path }}"
     owner: "{{ ansible_user }}"
     mode: '0644'
+  tags: [traefik, traefik_job]
 
-- name: Run or update Traefik Nomad job (submit from first client only)
+- name: Run or update Traefik Nomad job (submit from first server only)
   command: >
     nomad job run {{ traefik_nomad_job_path }}
-  when: inventory_hostname == groups['clients'][0]
+  when: inventory_hostname == groups['servers'][0]
+  tags: [traefik, traefik_deploy, deploy_traefik]

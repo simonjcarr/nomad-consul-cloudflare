@@ -1,0 +1,14 @@
+---
+- name: Deploy Traefik
+  hosts: servers[0]
+  tasks:
+    - name: Render Traefik Nomad job spec
+      template:
+        src: roles/traefik/templates/traefik.nomad.j2
+        dest: "{{ traefik_nomad_job_path | default('/tmp/traefik.nomad') }}"
+        owner: "{{ ansible_user }}"
+        mode: '0644'
+      
+    - name: Run or update Traefik Nomad job
+      command: >
+        nomad job run {{ traefik_nomad_job_path | default('/tmp/traefik.nomad') }}

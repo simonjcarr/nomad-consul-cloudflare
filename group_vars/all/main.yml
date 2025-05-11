@@ -2,3 +2,4 @@
 # Global configuration variables
 datacenter: "home_lab"
 cloudflare_tunnel_domain: "*.carrtech.dev"
+nomad_cloudflare_tunnel_job_dir: "/home/{{ ansible_user }}/jobs"
