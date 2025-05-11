@@ -1,5 +1,48 @@
 # Infrastructure Ansible Playbook: Traefik + Nomad + Consul
 
+## Pre-Deployment Configuration
+
+Before running this playbook, you **must** review and update several configuration files to match your environment. These are primarily located in the `inventory/` and `group_vars/all/` directories.
+
+**1. Inventory (`inventory/hosts.ini`):**
+   - **Host IP Addresses:** Update the `ansible_host` for each server (e.g., `nomad-srv-1`, `nomad-client-1`, etc.) with the correct IP addresses for your target machines.
+     ```ini
+     [servers]
+     nomad-srv-1 ansible_host=YOUR_SERVER_1_IP
+     # ... and so on for other servers and clients
+     ```
+   - **SSH User:** Change `ansible_user` to the username you will use to connect to the servers via SSH.
+     ```ini
+     [all:vars]
+     ansible_user = your_ssh_username
+     ```
+   - **SSH Private Key:** Modify `ansible_ssh_private_key_file` to point to the path of your SSH private key used for accessing the servers.
+     ```ini
+     ansible_ssh_private_key_file = /path/to/your/ssh_private_key
+     ```
+
+**2. Global Variables (`group_vars/all/main.yml`):**
+   - **Datacenter Name:** `datacenter` (default: `"home_lab"`) can be customized to reflect your environment.
+   - **Cloudflare Tunnel Domain:** `cloudflare_tunnel_domain` (e.g., `"*.example.com"`) **must** be changed to your own domain managed in Cloudflare. This is critical for the Cloudflare Tunnel functionality.
+   - **Nomad Cloudflare Tunnel Job Directory:** `nomad_cloudflare_tunnel_job_dir` (default: `"/home/{{ ansible_user }}/jobs"`) defines where Nomad job files for the tunnel will be stored. Adjust if you have a different preferred path.
+
+**3. Cloudflare Credentials (`group_vars/all/cloudflare.yml`):**
+   - **Important:** You will likely need to copy `group_vars/all/cloudflare-example.yml` to `group_vars/all/cloudflare.yml` (or ensure your Cloudflare variables are defined in a file Ansible loads from `group_vars/all/`).
+   - **`tunnel_token`**: This **must** be populated with your Cloudflare Tunnel token.
+   - **`tunnel_id`**: This **must** be populated with your Cloudflare Tunnel ID.
+
+**4. Traefik Configuration (`group_vars/all/traefik.yml`):**
+   - **Traefik Config Directory:** `traefik_config_dir` (e.g., `"/home/{{ ansible_user }}/traefik-config"`) specifies where Traefik's static configuration files will be stored on the host. Update this to your preferred path.
+   - **Traefik Nomad Job Path:** `traefik_nomad_job_path` (e.g., `"/home/{{ ansible_user }}/jobs/traefik.nomad"`) specifies where the generated Traefik Nomad job file will be stored. Update this to your preferred path.
+
+**5. Cloudflare Tunnel Ingress Rules (Optional Customization):**
+   - The file `roles/nomad_cloudflare_tunnel/templates/cloudflared_config.yml.j2` defines ingress rules.
+   - Specifically, the hostname `nomad-test.carrtech.dev` is configured. You may want to change this subdomain or remove/add other specific hostnames based on your needs. The general `{{ cloudflare_tunnel_domain }}` will cover wildcard access.
+
+**Note on Ansible Vault:** If you plan to store sensitive information like the `tunnel_token` securely, consider using Ansible Vault to encrypt `group_vars/all/cloudflare.yml` or a dedicated secrets file.
+
+Once these configurations are tailored to your setup, you can proceed with running the playbook.
+
 ## Overview
 This Ansible playbook automates the deployment and configuration of a modern load balancing stack using Traefik, Nomad, and Consul. It is designed for a multi-node environment, with security and maintainability as priorities.
 
