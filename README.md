@@ -43,6 +43,41 @@ Before running this playbook, you **must** review and update several configurati
 
 Once these configurations are tailored to your setup, you can proceed with running the playbook.
 
+## VM Prerequisites
+
+Before running the Ansible playbook, ensure your target Virtual Machines (VMs) meet the following prerequisites:
+
+**1. Operating System:**
+   - This playbook is primarily tested on Debian 12 (Bookworm) and was originally written for Ubuntu 24.04. Other Debian/Ubuntu-based distributions might work with minor adjustments.
+
+**2. User Account & Sudo:**
+   - A user account must exist on each VM that matches the `ansible_user` variable defined in your `inventory/hosts.ini` file (e.g., `simon`).
+   - This user **must** have passwordless `sudo` privileges. To configure this:
+     1. Log into the VM and run `sudo visudo`.
+     2. Add the following line at the end of the file, replacing `your_username` with the actual `ansible_user`:
+        ```
+        your_username ALL=(ALL) NOPASSWD:ALL
+        ```
+     3. Save and exit the editor. This change allows Ansible to perform administrative tasks without prompting for a password.
+
+**3. SSH Access:**
+   - The `ansible_user` must be able to SSH into each VM using key-based authentication, with the public key present in the user's `~/.ssh/authorized_keys` file on the target VMs, and the corresponding private key specified by `ansible_ssh_private_key_file` in `inventory/hosts.ini`.
+
+**4. Required Directory Structure:**
+   - **`/mnt/data`**: This directory is crucial, especially on Nomad client nodes. It's used for persistent data for services like Traefik (e.g., configuration, ACME certificates). It is highly recommended to have this as a separate mount point, ideally managed by LVM (Logical Volume Management) for future expandability. The playbook assumes this path exists and is writable by services managed by Nomad.
+   - **`/home/{{ ansible_user }}/jobs/`**: (Assuming `nomad_cloudflare_tunnel_job_dir` and `traefik_nomad_job_path` point here). This directory on the Ansible control node (or wherever the job files are templated to) will store generated Nomad job files.
+   - **`/home/{{ ansible_user }}/traefik-config/`**: (Assuming `traefik_config_dir` points here). This directory on the Ansible control node (or relevant host if deploying Traefik's config directly) will store Traefik's static configuration files.
+
+**5. Network Configuration:**
+   - Ensure your VMs have static IP addresses assigned, corresponding to what you will define in the `inventory/hosts.ini` file.
+   - VMs should have internet access for downloading packages and container images.
+   - Firewall: Ensure that necessary ports are open between the nodes (e.g., for Consul, Nomad, and your applications) and from your load balancer to the Nomad clients. The playbook attempts to manage `ufw`, but your underlying network/cloud provider firewall might also need configuration.
+
+**6. System Time (NTP):**
+   - It's highly recommended to have NTP configured and synchronized on all VMs. Time mismatches can cause issues with distributed systems like Consul and Nomad (e.g., certificate validation, log correlation).
+
+The playbook will attempt to install necessary software (like Docker, Nomad, Consul), create other required directories (like `/var/lib/nomad`, `/opt/consul`, `/etc/nomad.d`, etc.), and configure services. However, the prerequisites above are generally expected to be in place before the playbook runs.
+
 ## Overview
 This Ansible playbook automates the deployment and configuration of a modern load balancing stack using Traefik, Nomad, and Consul. It is designed for a multi-node environment, with security and maintainability as priorities.
 
